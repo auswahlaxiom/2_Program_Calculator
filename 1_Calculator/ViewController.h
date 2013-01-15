@@ -8,6 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
+
 @interface ViewController : UIViewController
+@property (weak, nonatomic) IBOutlet UILabel *display;
+@property (weak, nonatomic) IBOutlet UILabel *operationsDisplay;
+- (IBAction)digitPressed:(id)sender;
+- (IBAction)operationPressed:(id)sender;
+- (IBAction)enterPressed;
+- (IBAction)decimalPressed;
+- (IBAction)clearPressed;
 
 @end
