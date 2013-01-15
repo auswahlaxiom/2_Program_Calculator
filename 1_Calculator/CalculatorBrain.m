@@ -33,7 +33,6 @@
 }
 - (double)performOperation: (NSString *)operation {
     double result = 0;
-    NSLog(@"operation performed: %@", operation);
     if([operation isEqualToString:@"+"]) {
         result = [self popOperand] + [self popOperand];
     } else if([@"*" isEqualToString:operation]) {
@@ -59,6 +58,8 @@
         }
     } else if([operation isEqualToString:@"π"]) {
         result = M_PI;
+    } else if([operation isEqualToString:@"+/-"]) {
+        result = -1 * [self popOperand];
     }
     
     [self pushOperand:result];

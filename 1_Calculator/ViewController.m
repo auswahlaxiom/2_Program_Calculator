@@ -77,4 +77,40 @@
     self.userHasEnteredDecimal = NO;
     [self.brain clear];
 }
+
+- (IBAction)changeSignPressed {
+    if(self.userIsEnteringNumber) {
+        NSString *num = self.display.text;
+        if([num characterAtIndex:0] != '-') {
+            self.display.text = [@"-" stringByAppendingString:num];
+        } else {
+            self.display.text = [num substringFromIndex:1];
+            if(self.display.text.length == 0) self.display.text = @"0";
+        }
+        /*
+        BOOL addDot = [self.display.text characterAtIndex:(self.display.text.length-1)] == '.';
+        self.display.text = [NSString stringWithFormat:@"%g",(-1 * [self.display.text doubleValue])];
+        if(addDot) self.display.text = [self.display.text stringByAppendingString:@"."];
+         */
+    } else {
+        double result = [self.brain performOperation:@"+/-"];
+        self.display.text = [NSString stringWithFormat:@"%g", result];
+        
+        [self.operationsDisplay setText:[self.operationsDisplay.text stringByAppendingString:@"+/-"] ];
+    }
+}
+
+- (IBAction)deletePressed {
+    if(self.userIsEnteringNumber) {
+        NSString *num = self.display.text;
+        if([num isEqualToString:@""] || num.length < 2) {
+            num = @"0";
+            self.userHasEnteredDecimal = NO;
+        } else {
+            if([num characterAtIndex:(num.length-1)] == '.') self.userHasEnteredDecimal = NO;
+            num = [num substringToIndex:num.length - 1];
+        }
+        self.display.text = num;
+    }
+}
 @end

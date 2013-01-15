@@ -17,5 +17,7 @@
 - (IBAction)enterPressed;
 - (IBAction)decimalPressed;
 - (IBAction)clearPressed;
+- (IBAction)changeSignPressed;
+- (IBAction)deletePressed;
 
 @end
