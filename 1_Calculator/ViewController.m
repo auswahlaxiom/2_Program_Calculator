@@ -27,6 +27,13 @@
     if(!_brain) _brain = [[CalculatorBrain alloc] init];
     return _brain;
 }
+
+- (void)addToHistory: (NSString *) symbol {
+    if(self.operationsDisplay.text.length > 29) {
+        self.operationsDisplay.text = [self.operationsDisplay.text substringFromIndex:symbol.length];
+    }
+    [self.operationsDisplay setText:[self.operationsDisplay.text stringByAppendingString:symbol] ];
+}
 - (IBAction)digitPressed:(UIButton*)sender {
     NSString *digit = [sender currentTitle];
     if(self.userIsEnteringNumber) {
@@ -35,7 +42,7 @@
         self.display.text = digit;
         self.userIsEnteringNumber = YES;
     }
-    [self.operationsDisplay setText:[self.operationsDisplay.text stringByAppendingString:digit] ];
+    [self addToHistory:digit];
 }
 
 - (IBAction)operationPressed:(UIButton *)sender {
@@ -43,15 +50,15 @@
     double result = [self.brain performOperation:sender.currentTitle];
     self.display.text = [NSString stringWithFormat:@"%g", result];
     
-    [self.operationsDisplay setText:[self.operationsDisplay.text stringByAppendingString:[NSString stringWithFormat:@"%@ ", sender.currentTitle]] ];
+    [self addToHistory:[NSString stringWithFormat:@"%@ ", sender.currentTitle]];
 }
 
 - (IBAction)enterPressed {
     [self.brain pushOperand:[self.display.text doubleValue]];
     if(self.userIsEnteringNumber) {
-        [self.operationsDisplay setText:[self.operationsDisplay.text stringByAppendingString:@" "] ];
+        [self addToHistory:@" "];
     } else {
-        [self.operationsDisplay setText:[self.operationsDisplay.text stringByAppendingString:[NSString stringWithFormat:@"%@ ", self.display.text]] ];
+        [self addToHistory:[NSString stringWithFormat:@"%@ ", self.display.text]];
     }
     self.userIsEnteringNumber = NO;
     self.userHasEnteredDecimal = NO;
@@ -59,7 +66,7 @@
 
 - (IBAction)decimalPressed {
     if(!self.userHasEnteredDecimal) {
-        [self.operationsDisplay setText:[self.operationsDisplay.text stringByAppendingString:@"."] ];
+        [self addToHistory:@"."];
         if(self.userIsEnteringNumber) {
             [self.display setText:[self.display.text stringByAppendingString:@"."]];
         } else {
@@ -96,7 +103,7 @@
         double result = [self.brain performOperation:@"+/-"];
         self.display.text = [NSString stringWithFormat:@"%g", result];
         
-        [self.operationsDisplay setText:[self.operationsDisplay.text stringByAppendingString:@"+/-"] ];
+        [self addToHistory:@"+/-"];
     }
 }
 
