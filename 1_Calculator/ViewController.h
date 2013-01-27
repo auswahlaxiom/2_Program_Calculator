@@ -19,6 +19,9 @@
 - (IBAction)clearPressed;
 - (IBAction)changeSignPressed;
 - (IBAction)deletePressed;
-- (IBAction)testDesc:(id)sender;
+- (IBAction)varPressed:(id)sender;
+- (IBAction)test1:(id)sender;
+- (IBAction)test2:(id)sender;
+@property (weak, nonatomic) IBOutlet UILabel *variableValueDisplay;
 
 @end

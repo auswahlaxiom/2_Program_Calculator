@@ -18,10 +18,30 @@
 @implementation CalculatorBrain
 
 @synthesize programStack = _programStack;
+@synthesize  test1 = _test1; @synthesize test2 = _test2; @synthesize variableValues = _variableValues;
 
+- (NSDictionary *)test1 {
+    if(_test1 == nil) _test1 = [[NSDictionary alloc] initWithObjects:[NSArray arrayWithObjects:
+                                                                      [NSNumber numberWithInt:1],
+                                                                      [NSNumber numberWithInt:2],
+                                                                      [NSNumber numberWithInt:3], nil]
+                                                             forKeys:[NSArray arrayWithObjects:@"x", @"y", @"z", nil]];
+    return _test1;
+}
+- (NSDictionary *)test2 {
+    if(_test2 == nil) _test2 = [[NSDictionary alloc] initWithObjects:[NSArray arrayWithObjects:
+                                                                      [NSNumber numberWithDouble:-6.1],
+                                                                      [NSNumber numberWithDouble:-6.2],
+                                                                      [NSNumber numberWithDouble:-6.3], nil]
+                                                             forKeys:[NSArray arrayWithObjects:@"x", @"y", @"z", nil]];
+    return _test2;
+}
 - (NSMutableArray *)programStack {
     if(_programStack == nil) _programStack = [[NSMutableArray alloc] init];
     return _programStack;
+}
+- (id)program {
+    return [self.programStack copy];
 }
 -(void) clear {
     [self.programStack removeAllObjects];
@@ -31,80 +51,52 @@
     [self.programStack addObject:[NSNumber numberWithDouble:operand]];
     
 }
+- (void)pushVariable:(NSString *)variable {
+    
+    [self.programStack addObject:variable];
+    
+}
 - (double)performOperation: (NSString *)operation {
     [self.programStack addObject:operation];
-    
-    return [CalculatorBrain runProgram:self.program];
+    if (self.variableValues == nil) {
+        self.variableValues = self.test1;
+    }
+    if([CalculatorBrain variablesUsedInProgram:self.program]) {
+        return [CalculatorBrain runProgram:self.program usingVariableValues:self.variableValues];
+    } else {
+        return [CalculatorBrain runProgram:self.program];
+    }
 }
-
-- (id)program {
-    return [self.programStack copy];
-}
-
-+ (NSString *)descriptionOfProgram:(id)program {
-    NSMutableArray *stack;
-    NSMutableString *description = [[NSMutableString alloc] init];
++ (NSSet *)variablesUsedInProgram:(id)program {
+    NSMutableSet *variables = [[NSMutableSet alloc] init];
     if([program isKindOfClass:[NSArray class]]) {
-        stack = [program mutableCopy];
-    }
-    NSMutableString *section = [[self popStringDescriptionOffStack:stack intoString:section] mutableCopy];
-    if([section characterAtIndex:0] == '(' && [section characterAtIndex:[section length]-1] == ')' ) {
-        [section deleteCharactersInRange:NSMakeRange(0, 1)];
-        [section deleteCharactersInRange:NSMakeRange([section length]-1, 1)];
-    }
-    [description appendString:section];
-    while(stack.lastObject) {
-        [description appendString:@", "];
-        NSMutableString *section = [[self popStringDescriptionOffStack:stack intoString:section] mutableCopy];
-        if([section characterAtIndex:0] == '(' && [section characterAtIndex:[section length]-1] == ')' ) {
-            [section deleteCharactersInRange:NSMakeRange(0, 1)];
-            [section deleteCharactersInRange:NSMakeRange([section length]-1, 1)];
+        NSArray *stack = program;
+        for(id obj in stack) {
+            if([obj isKindOfClass:[NSString class]] ) {
+                if(![CalculatorBrain isOperator:obj]) {
+                    [variables addObject: obj];
+                }
+            }
         }
-        [description appendString:section];
     }
-    return description;
+    if([variables count] == 0) return nil;
+    return [variables copy];
 }
-+ (NSString *)popStringDescriptionOffStack:(NSMutableArray *)stack intoString:(NSString *)description {
-    id topOfStack = [stack lastObject];
-    if(topOfStack) [stack removeLastObject];
++ (BOOL)isOperator: (NSString *)symbol {
+    return [symbol isEqualToString:@"+"] ||
+        [symbol isEqualToString:@"-"] ||
+        [symbol isEqualToString:@"*"] ||
+        [symbol isEqualToString:@"/"] ||
+        [symbol isEqualToString:@"sin"] ||
+        [symbol isEqualToString:@"cos"] ||
+        [symbol isEqualToString:@"sqrt"] ||
+        [symbol isEqualToString:@"pi"] ||
+        [symbol isEqualToString:@"√"] ||
+        [symbol isEqualToString:@"π"] ||
+        [symbol isEqualToString:@"+/-"];
     
-    if([topOfStack isKindOfClass:[NSString class]]) {
-        NSString *operation = topOfStack;
-        //NSLog([NSString stringWithFormat:@"recieved: %@", operation]);
-        
-        if([operation isEqualToString:@"+"]) {
-            NSString *firstPart = [self popStringDescriptionOffStack:stack intoString:description];
-            description =[NSString stringWithFormat:@"(%@ %@ %@)", [self popStringDescriptionOffStack:stack intoString:description], operation, firstPart];
-        } else if([@"*" isEqualToString:operation]) {
-            NSString *firstPart = [self popStringDescriptionOffStack:stack intoString:description];
-            description =[NSString stringWithFormat:@"%@ %@ %@", [self popStringDescriptionOffStack:stack intoString:description], operation, firstPart];
-        } else if([operation isEqualToString:@"/"]) {
-            NSString *subtravisor = [self popStringDescriptionOffStack:stack intoString:description];
-            if(subtravisor) description =[NSString stringWithFormat:@"%@ %@ %@", [self popStringDescriptionOffStack:stack intoString:description], operation, subtravisor];
-        }else if([operation isEqualToString:@"-"]) {
-            NSString *subtravisor = [self popStringDescriptionOffStack:stack intoString:description];
-            if(subtravisor) description =[NSString stringWithFormat:@"(%@ %@ %@)", [self popStringDescriptionOffStack:stack intoString:description], operation, subtravisor];
+}
 
-        } else if([operation isEqualToString:@"sin"] || [operation isEqualToString:@"cos"] || [operation isEqualToString:@"√"]) {
-            description =[NSString stringWithFormat:@"%@(%@)", operation, [self popStringDescriptionOffStack:stack intoString:description]];
-        } else if([operation isEqualToString:@"sqrt"]) {
-            description =[NSString stringWithFormat:@"√(%@)", [self popStringDescriptionOffStack:stack intoString:description]];
-        }else if([operation isEqualToString:@"π"] || [operation isEqualToString:@"pi"]) {
-            description = @"π";
-        } else if([operation isEqualToString:@"+/-"]) {
-            description =[NSString stringWithFormat:@"-%@", [self popStringDescriptionOffStack:stack intoString:description]];
-        } else {
-            return operation; //in this case it's a variable, just return it
-        }
-    } else if([topOfStack isKindOfClass:[NSNumber class]]) {
-        NSNumber *operand = topOfStack;
-       // NSLog([NSString stringWithFormat:@"recieved: %@", [operand stringValue]]);
-        return [operand stringValue];
-    }
-    
-    //NSLog([NSString stringWithFormat:@"current description: %@", description]);
-    return description;
-}
 + (double)runProgram:(id)program {
     NSMutableArray *stack;
     if([program isKindOfClass:[NSArray class]]) {
@@ -139,7 +131,7 @@
         NSString *operation = topOfStack;
         if([operation isEqualToString:@"+"]) {
             result = [self popOperandOffStack:stack] + [self popOperandOffStack:stack];
-        } else if([@"*" isEqualToString:operation]) {
+        } else if([operation isEqualToString:@"*"]) {
             result = [self popOperandOffStack:stack] * [self popOperandOffStack:stack];
         } else if([operation isEqualToString:@"-"]) {
             double subtrahend = [self popOperandOffStack:stack];
@@ -170,7 +162,79 @@
     return result;
 
 }
++ (NSString *)descriptionOfProgram:(id)program {
+    NSMutableArray *stack;
+    NSMutableString *description = [[NSMutableString alloc] init];
+    if([program isKindOfClass:[NSArray class]]) {
+        stack = [program mutableCopy];
+    }
+    NSMutableString *section = [[NSMutableString alloc] init];
+    section = [[self popStringDescriptionOffStack:stack intoString:section] mutableCopy];
+    if([section characterAtIndex:0] == '(' && [section characterAtIndex:[section length]-1] == ')' ) {
+        [section deleteCharactersInRange:NSMakeRange(0, 1)];
+        [section deleteCharactersInRange:NSMakeRange([section length]-1, 1)];
+    }
+    [description appendString:section];
+    while(stack.lastObject) {
+        [description appendString:@", "];
+        NSMutableString *section = [[self popStringDescriptionOffStack:stack intoString:section] mutableCopy];
+        if([section characterAtIndex:0] == '(' && [section characterAtIndex:[section length]-1] == ')' ) {
+            [section deleteCharactersInRange:NSMakeRange(0, 1)];
+            [section deleteCharactersInRange:NSMakeRange([section length]-1, 1)];
+        }
+        [description appendString:section];
+    }
+    return description;
+}
++ (NSString *)popStringDescriptionOffStack:(NSMutableArray *)stack intoString:(NSString *)description {
+    id topOfStack = [stack lastObject];
+    if(topOfStack) {[stack removeLastObject];}
+    else {return @"0";}
     
+    if([topOfStack isKindOfClass:[NSString class]]) {
+        NSString *operation = topOfStack;
+        //NSLog([NSString stringWithFormat:@"recieved: %@", operation]);
+        
+        if([operation isEqualToString:@"+"]) {
+            NSString *firstPart = [self popStringDescriptionOffStack:stack intoString:description];
+            description =[NSString stringWithFormat:@"(%@ %@ %@)", [self popStringDescriptionOffStack:stack intoString:description], operation, firstPart];
+        } else if([@"*" isEqualToString:operation]) {
+            NSString *firstPart = [self popStringDescriptionOffStack:stack intoString:description];
+            description =[NSString stringWithFormat:@"%@ %@ %@", [self popStringDescriptionOffStack:stack intoString:description], operation, firstPart];
+        } else if([operation isEqualToString:@"/"]) {
+            NSString *subtravisor = [self popStringDescriptionOffStack:stack intoString:description];
+            if(subtravisor) description =[NSString stringWithFormat:@"%@ %@ %@", [self popStringDescriptionOffStack:stack intoString:description], operation, subtravisor];
+        }else if([operation isEqualToString:@"-"]) {
+            NSString *subtravisor = [self popStringDescriptionOffStack:stack intoString:description];
+            if(subtravisor) description =[NSString stringWithFormat:@"(%@ %@ %@)", [self popStringDescriptionOffStack:stack intoString:description], operation, subtravisor];
+            
+        } else if([operation isEqualToString:@"sin"] || [operation isEqualToString:@"cos"] || [operation isEqualToString:@"√"]) {
+            description =[NSString stringWithFormat:@"%@(%@)", operation, [self popStringDescriptionOffStack:stack intoString:description]];
+        } else if([operation isEqualToString:@"sqrt"]) {
+            description =[NSString stringWithFormat:@"√(%@)", [self popStringDescriptionOffStack:stack intoString:description]];
+        }else if([operation isEqualToString:@"π"] || [operation isEqualToString:@"pi"]) {
+            description = @"π";
+        } else if([operation isEqualToString:@"+/-"]) {
+            NSMutableString *operand = [[self popStringDescriptionOffStack:stack intoString:description] mutableCopy];
+            if([operand characterAtIndex:0] == '-' ) {
+                [operand deleteCharactersInRange:NSMakeRange(0, 1)];
+            } else {
+                operand = [NSString stringWithFormat:@"-%@", operand];
+            }
+            description = operand;
+        } else {
+            return operation; //in this case it's a variable, just return it
+        }
+    } else if([topOfStack isKindOfClass:[NSNumber class]]) {
+        NSNumber *operand = topOfStack;
+        // NSLog([NSString stringWithFormat:@"recieved: %@", [operand stringValue]]);
+        return [operand stringValue];
+    }
+    
+    //NSLog([NSString stringWithFormat:@"current description: %@", description]);
+    return description;
+}
+
 
 
 @end

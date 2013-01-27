@@ -14,6 +14,7 @@
 @property (nonatomic) BOOL userIsEnteringNumber;
 @property (nonatomic) BOOL userHasEnteredDecimal;
 @property (nonatomic, strong) CalculatorBrain *brain;
+
 @end
 
 @implementation ViewController
@@ -23,16 +24,22 @@
 @synthesize userHasEnteredDecimal = _userHasEnteredDecimal;
 @synthesize  brain = _brain;
 
+
 - (CalculatorBrain *)brain {
     if(!_brain) _brain = [[CalculatorBrain alloc] init];
     return _brain;
 }
 
-- (void)addToHistory: (NSString *) symbol {
-    if(self.operationsDisplay.text.length > 29) {
-        self.operationsDisplay.text = [self.operationsDisplay.text substringFromIndex:symbol.length];
+- (void)updateOperationsDisplay {
+    self.operationsDisplay.text = [CalculatorBrain descriptionOfProgram:self.brain.program];
+}
+- (void)updateVaraibleValuesDisplay {
+    NSSet *vars = [CalculatorBrain variablesUsedInProgram:self.brain.program];
+    NSMutableString *display = [[NSMutableString alloc] init];
+    for(NSString *var in vars) {
+        [display appendString:[NSString stringWithFormat:@"%@ = %@,  ", var, [self.brain.variableValues objectForKey:var]]];
     }
-    [self.operationsDisplay setText:[self.operationsDisplay.text stringByAppendingString:symbol] ];
+    self.variableValueDisplay.text = display;
 }
 - (IBAction)digitPressed:(UIButton*)sender {
     NSString *digit = [sender currentTitle];
@@ -42,31 +49,27 @@
         self.display.text = digit;
         self.userIsEnteringNumber = YES;
     }
-    [self addToHistory:digit];
 }
 
 - (IBAction)operationPressed:(UIButton *)sender {
     if(self.userIsEnteringNumber) [self enterPressed];
     double result = [self.brain performOperation:sender.currentTitle];
+    
     self.display.text = [NSString stringWithFormat:@"%g", result];
     
-    [self addToHistory:[NSString stringWithFormat:@"%@ ", sender.currentTitle]];
+    [self updateOperationsDisplay];
+    [self updateVaraibleValuesDisplay];
 }
 
 - (IBAction)enterPressed {
     [self.brain pushOperand:[self.display.text doubleValue]];
-    if(self.userIsEnteringNumber) {
-        [self addToHistory:@" "];
-    } else {
-        [self addToHistory:[NSString stringWithFormat:@"%@ ", self.display.text]];
-    }
+    [self updateOperationsDisplay];
     self.userIsEnteringNumber = NO;
     self.userHasEnteredDecimal = NO;
 }
 
 - (IBAction)decimalPressed {
     if(!self.userHasEnteredDecimal) {
-        [self addToHistory:@"."];
         if(self.userIsEnteringNumber) {
             [self.display setText:[self.display.text stringByAppendingString:@"."]];
         } else {
@@ -80,6 +83,7 @@
 - (IBAction)clearPressed {
     self.display.text = @"0";
     self.operationsDisplay.text = @"";
+    self.variableValueDisplay.text = @"";
     self.userIsEnteringNumber = NO;
     self.userHasEnteredDecimal = NO;
     [self.brain clear];
@@ -103,7 +107,7 @@
         double result = [self.brain performOperation:@"+/-"];
         self.display.text = [NSString stringWithFormat:@"%g", result];
         
-        [self addToHistory:@"+/-"];
+        [self updateOperationsDisplay];
     }
 }
 
@@ -121,22 +125,36 @@
     }
 }
 
-- (IBAction)testDesc:(id)sender {
-    NSArray *program = [NSArray arrayWithObjects:
-                        @"3",
-                        @"5",
-                        @"+",
-                        @"2",
-                        @"5",
-                        @"+",
-                        @"*",
-                        @"cos",
-                        @"6",
-                        @"7",
-                        @"*",
-                        @"9",
-                        @"sqrt",
-                        nil];
-    self.operationsDisplay.text = [CalculatorBrain descriptionOfProgram:program];
+- (IBAction)varPressed:(id)sender {
+    if(self.userIsEnteringNumber) {
+        [self enterPressed];
+    }
+    [self.brain pushVariable:[sender currentTitle]];
+    [self updateOperationsDisplay];
 }
+
+- (IBAction)test1:(id)sender {
+    self.brain.variableValues = self.brain.test1;
+    double result;
+    if([CalculatorBrain variablesUsedInProgram:self.brain.program]) {
+        result = [CalculatorBrain runProgram:self.brain.program usingVariableValues:self.brain.variableValues];
+    } else {
+        result = [CalculatorBrain runProgram:self.brain.program];
+    }
+    [self updateVaraibleValuesDisplay];
+    self.display.text = [NSString stringWithFormat:@"%g", result];
+}
+
+- (IBAction)test2:(id)sender {
+    self.brain.variableValues = self.brain.test2;
+    double result;
+    if([CalculatorBrain variablesUsedInProgram:self.brain.program]) {
+        result = [CalculatorBrain runProgram:self.brain.program usingVariableValues:self.brain.variableValues];
+    } else {
+        result = [CalculatorBrain runProgram:self.brain.program];
+    }
+    [self updateVaraibleValuesDisplay];
+    self.display.text = [NSString stringWithFormat:@"%g", result];
+}
+
 @end
