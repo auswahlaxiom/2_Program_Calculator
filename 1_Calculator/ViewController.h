@@ -19,5 +19,6 @@
 - (IBAction)clearPressed;
 - (IBAction)changeSignPressed;
 - (IBAction)deletePressed;
+- (IBAction)testDesc:(id)sender;
 
 @end

@@ -120,4 +120,18 @@
         self.display.text = num;
     }
 }
+
+- (IBAction)testDesc:(id)sender {
+    NSArray *program = [NSArray arrayWithObjects:
+                        @"a",
+                        @"a",
+                        @"*",
+                        @"b",
+                        @"b",
+                        @"*",
+                        @"+",
+                        @"sqrt",
+                        nil];
+    self.operationsDisplay.text = [CalculatorBrain descriptionOfProgram:program];
+}
 @end
