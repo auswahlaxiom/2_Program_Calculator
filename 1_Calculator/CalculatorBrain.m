@@ -43,14 +43,24 @@
 
 + (NSString *)descriptionOfProgram:(id)program {
     NSMutableArray *stack;
-    NSMutableString *description;
+    NSMutableString *description = [[NSMutableString alloc] init];
     if([program isKindOfClass:[NSArray class]]) {
         stack = [program mutableCopy];
     }
-    description = [[self popStringDescriptionOffStack:stack intoString:description] mutableCopy];
-    if([description characterAtIndex:0] == '(' && [description characterAtIndex:[description length]-1] == ')' ) {
-        [description deleteCharactersInRange:NSMakeRange(0, 1)];
-        [description deleteCharactersInRange:NSMakeRange([description length]-1, 1)];
+    NSMutableString *section = [[self popStringDescriptionOffStack:stack intoString:section] mutableCopy];
+    if([section characterAtIndex:0] == '(' && [section characterAtIndex:[section length]-1] == ')' ) {
+        [section deleteCharactersInRange:NSMakeRange(0, 1)];
+        [section deleteCharactersInRange:NSMakeRange([section length]-1, 1)];
+    }
+    [description appendString:section];
+    while(stack.lastObject) {
+        [description appendString:@", "];
+        NSMutableString *section = [[self popStringDescriptionOffStack:stack intoString:section] mutableCopy];
+        if([section characterAtIndex:0] == '(' && [section characterAtIndex:[section length]-1] == ')' ) {
+            [section deleteCharactersInRange:NSMakeRange(0, 1)];
+            [section deleteCharactersInRange:NSMakeRange([section length]-1, 1)];
+        }
+        [description appendString:section];
     }
     return description;
 }
@@ -91,6 +101,7 @@
        // NSLog([NSString stringWithFormat:@"recieved: %@", [operand stringValue]]);
         return [operand stringValue];
     }
+    
     //NSLog([NSString stringWithFormat:@"current description: %@", description]);
     return description;
 }

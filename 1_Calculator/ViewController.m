@@ -123,13 +123,18 @@
 
 - (IBAction)testDesc:(id)sender {
     NSArray *program = [NSArray arrayWithObjects:
-                        @"a",
-                        @"a",
-                        @"*",
-                        @"b",
-                        @"b",
-                        @"*",
+                        @"3",
+                        @"5",
                         @"+",
+                        @"2",
+                        @"5",
+                        @"+",
+                        @"*",
+                        @"cos",
+                        @"6",
+                        @"7",
+                        @"*",
+                        @"9",
                         @"sqrt",
                         nil];
     self.operationsDisplay.text = [CalculatorBrain descriptionOfProgram:program];
