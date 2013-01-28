@@ -14,11 +14,9 @@
 - (void)pushVariable: (NSString *)variable;
 - (double)performOperation: (NSString *)operation;
 - (void)clear;
+- (void)undo;
 
 @property (readonly) id program;
-@property (strong, nonatomic) NSDictionary *variableValues;
-@property (nonatomic, strong) NSDictionary *test1;
-@property (nonatomic, strong) NSDictionary *test2;
 
 + (double)runProgram: (id)program;
 + (double)runProgram:(id)program usingVariableValues:(NSDictionary *)variableValues;

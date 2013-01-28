@@ -18,24 +18,7 @@
 @implementation CalculatorBrain
 
 @synthesize programStack = _programStack;
-@synthesize  test1 = _test1; @synthesize test2 = _test2; @synthesize variableValues = _variableValues;
 
-- (NSDictionary *)test1 {
-    if(_test1 == nil) _test1 = [[NSDictionary alloc] initWithObjects:[NSArray arrayWithObjects:
-                                                                      [NSNumber numberWithInt:1],
-                                                                      [NSNumber numberWithInt:2],
-                                                                      [NSNumber numberWithInt:3], nil]
-                                                             forKeys:[NSArray arrayWithObjects:@"x", @"y", @"z", nil]];
-    return _test1;
-}
-- (NSDictionary *)test2 {
-    if(_test2 == nil) _test2 = [[NSDictionary alloc] initWithObjects:[NSArray arrayWithObjects:
-                                                                      [NSNumber numberWithDouble:-6.1],
-                                                                      [NSNumber numberWithDouble:-6.2],
-                                                                      [NSNumber numberWithDouble:-6.3], nil]
-                                                             forKeys:[NSArray arrayWithObjects:@"x", @"y", @"z", nil]];
-    return _test2;
-}
 - (NSMutableArray *)programStack {
     if(_programStack == nil) _programStack = [[NSMutableArray alloc] init];
     return _programStack;
@@ -43,8 +26,11 @@
 - (id)program {
     return [self.programStack copy];
 }
--(void) clear {
+- (void)clear {
     [self.programStack removeAllObjects];
+}
+- (void)undo {
+    [self.programStack removeLastObject];
 }
 - (void)pushOperand: (double)operand {
 
@@ -58,14 +44,7 @@
 }
 - (double)performOperation: (NSString *)operation {
     [self.programStack addObject:operation];
-    if (self.variableValues == nil) {
-        self.variableValues = self.test1;
-    }
-    if([CalculatorBrain variablesUsedInProgram:self.program]) {
-        return [CalculatorBrain runProgram:self.program usingVariableValues:self.variableValues];
-    } else {
-        return [CalculatorBrain runProgram:self.program];
-    }
+    return [CalculatorBrain runProgram:self.program];
 }
 + (NSSet *)variablesUsedInProgram:(id)program {
     NSMutableSet *variables = [[NSMutableSet alloc] init];
@@ -105,6 +84,7 @@
     return [self popOperandOffStack:stack];
 }
 + (double)runProgram:(id)program usingVariableValues:(NSDictionary *)variableValues {
+
     NSMutableArray *stack;
     if([program isKindOfClass:[NSArray class]]) {
         stack = [program mutableCopy];
@@ -114,9 +94,12 @@
         if ([variableValues objectForKey:[stack objectAtIndex:i]] != nil) {
             [stack replaceObjectAtIndex:i withObject:
              [variableValues objectForKey:[stack objectAtIndex:i]]];
+        } else if (![CalculatorBrain isOperator:[stack objectAtIndex:i]]){
+            [stack replaceObjectAtIndex:i withObject:[NSNumber numberWithInt:0]];
         }
     }
     //execute program normally now
+
     return [self popOperandOffStack:stack];
 }
 + (double)popOperandOffStack:(NSMutableArray *)stack {
@@ -158,7 +141,6 @@
             result = -1 * [self popOperandOffStack:stack];
         }
     }
-
     return result;
 
 }

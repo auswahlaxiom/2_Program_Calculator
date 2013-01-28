@@ -14,6 +14,7 @@
 @property (nonatomic) BOOL userIsEnteringNumber;
 @property (nonatomic) BOOL userHasEnteredDecimal;
 @property (nonatomic, strong) CalculatorBrain *brain;
+@property (strong, nonatomic) NSDictionary *variableValues;
 
 @end
 
@@ -23,6 +24,7 @@
 @synthesize userIsEnteringNumber = _userIsEnteringNumber;
 @synthesize userHasEnteredDecimal = _userHasEnteredDecimal;
 @synthesize  brain = _brain;
+@synthesize variableValues = _variableValues;
 
 
 - (CalculatorBrain *)brain {
@@ -37,7 +39,11 @@
     NSSet *vars = [CalculatorBrain variablesUsedInProgram:self.brain.program];
     NSMutableString *display = [[NSMutableString alloc] init];
     for(NSString *var in vars) {
-        [display appendString:[NSString stringWithFormat:@"%@ = %@,  ", var, [self.brain.variableValues objectForKey:var]]];
+        if([self.variableValues objectForKey:var]) {
+            [display appendString:[NSString stringWithFormat:@"%@ = %@,  ", var, [self.variableValues objectForKey:var]]];
+        } else {
+            [display appendString:[NSString stringWithFormat:@"%@ = 0,  ", var]];
+        }
     }
     self.variableValueDisplay.text = display;
 }
@@ -56,7 +62,7 @@
     double result = [self.brain performOperation:sender.currentTitle];
     
     self.display.text = [NSString stringWithFormat:@"%g", result];
-    
+    self.variableValues = nil;
     [self updateOperationsDisplay];
     [self updateVaraibleValuesDisplay];
 }
@@ -98,15 +104,11 @@
             self.display.text = [num substringFromIndex:1];
             if(self.display.text.length == 0) self.display.text = @"0";
         }
-        /*
-        BOOL addDot = [self.display.text characterAtIndex:(self.display.text.length-1)] == '.';
-        self.display.text = [NSString stringWithFormat:@"%g",(-1 * [self.display.text doubleValue])];
-        if(addDot) self.display.text = [self.display.text stringByAppendingString:@"."];
-         */
     } else {
         double result = [self.brain performOperation:@"+/-"];
         self.display.text = [NSString stringWithFormat:@"%g", result];
-        
+        self.variableValues = nil;
+        [self updateVaraibleValuesDisplay];
         [self updateOperationsDisplay];
     }
 }
@@ -122,6 +124,18 @@
             num = [num substringToIndex:num.length - 1];
         }
         self.display.text = num;
+    } else {
+        [self.brain undo];
+        [self updateOperationsDisplay];
+        double result;
+        if([CalculatorBrain variablesUsedInProgram:self.brain.program]) {
+            result = [CalculatorBrain runProgram:self.brain.program usingVariableValues:self.variableValues];
+        } else {
+            result = [CalculatorBrain runProgram:self.brain.program];
+        }
+        [self updateVaraibleValuesDisplay];
+        self.display.text = [NSString stringWithFormat:@"%g", result];
+        
     }
 }
 
@@ -134,10 +148,14 @@
 }
 
 - (IBAction)test1:(id)sender {
-    self.brain.variableValues = self.brain.test1;
+    self.variableValues = [[NSDictionary alloc] initWithObjects:[NSArray arrayWithObjects:
+                                                                [NSNumber numberWithDouble:-6.1],
+                                                                [NSNumber numberWithDouble:-6.2],
+                                                                [NSNumber numberWithDouble:-6.3], nil]
+                                                       forKeys:[NSArray arrayWithObjects:@"x", @"y", @"z", nil]];
     double result;
     if([CalculatorBrain variablesUsedInProgram:self.brain.program]) {
-        result = [CalculatorBrain runProgram:self.brain.program usingVariableValues:self.brain.variableValues];
+        result = [CalculatorBrain runProgram:self.brain.program usingVariableValues:self.variableValues];
     } else {
         result = [CalculatorBrain runProgram:self.brain.program];
     }
@@ -146,10 +164,14 @@
 }
 
 - (IBAction)test2:(id)sender {
-    self.brain.variableValues = self.brain.test2;
+    self.variableValues = [[NSDictionary alloc] initWithObjects:[NSArray arrayWithObjects:
+                                                                [NSNumber numberWithInt:1],
+                                                                [NSNumber numberWithInt:2],
+                                                                [NSNumber numberWithInt:3], nil]
+                                                       forKeys:[NSArray arrayWithObjects:@"x", @"y", @"z", nil]];
     double result;
     if([CalculatorBrain variablesUsedInProgram:self.brain.program]) {
-        result = [CalculatorBrain runProgram:self.brain.program usingVariableValues:self.brain.variableValues];
+        result = [CalculatorBrain runProgram:self.brain.program usingVariableValues:self.variableValues];
     } else {
         result = [CalculatorBrain runProgram:self.brain.program];
     }
