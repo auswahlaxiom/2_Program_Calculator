@@ -61,7 +61,10 @@
     if([variables count] == 0) return nil;
     return [variables copy];
 }
-+ (BOOL)isOperator: (NSString *)symbol {
++ (BOOL)isOperator: (id) symbol {
+    if([symbol isKindOfClass:[NSNumber class]]) {
+        return true;
+    }
     return [symbol isEqualToString:@"+"] ||
         [symbol isEqualToString:@"-"] ||
         [symbol isEqualToString:@"*"] ||

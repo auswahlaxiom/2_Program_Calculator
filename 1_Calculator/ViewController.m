@@ -149,11 +149,11 @@
 
 - (IBAction)test1:(id)sender {
     self.variableValues = [[NSDictionary alloc] initWithObjects:[NSArray arrayWithObjects:
-                                                                [NSNumber numberWithDouble:-6.1],
-                                                                [NSNumber numberWithDouble:-6.2],
-                                                                [NSNumber numberWithDouble:-6.3], nil]
-                                                       forKeys:[NSArray arrayWithObjects:@"x", @"y", @"z", nil]];
-    double result;
+                                                                 [NSNumber numberWithInt:1],
+                                                                 [NSNumber numberWithInt:2],
+                                                                 [NSNumber numberWithInt:3], nil]
+                                                        forKeys:[NSArray arrayWithObjects:@"x", @"y", @"z", nil]];
+        double result;
     if([CalculatorBrain variablesUsedInProgram:self.brain.program]) {
         result = [CalculatorBrain runProgram:self.brain.program usingVariableValues:self.variableValues];
     } else {
@@ -165,10 +165,11 @@
 
 - (IBAction)test2:(id)sender {
     self.variableValues = [[NSDictionary alloc] initWithObjects:[NSArray arrayWithObjects:
-                                                                [NSNumber numberWithInt:1],
-                                                                [NSNumber numberWithInt:2],
-                                                                [NSNumber numberWithInt:3], nil]
-                                                       forKeys:[NSArray arrayWithObjects:@"x", @"y", @"z", nil]];
+                                                                 [NSNumber numberWithDouble:-6.1],
+                                                                 [NSNumber numberWithDouble:-6.2],
+                                                                 [NSNumber numberWithDouble:-6.3], nil]
+                                                        forKeys:[NSArray arrayWithObjects:@"x", @"y", @"z", nil]];
+
     double result;
     if([CalculatorBrain variablesUsedInProgram:self.brain.program]) {
         result = [CalculatorBrain runProgram:self.brain.program usingVariableValues:self.variableValues];
